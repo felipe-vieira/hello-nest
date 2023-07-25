@@ -1,36 +1,34 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-
-export interface Cat {
-  id: number;
-  name: string;
-}
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
+import { Cat } from './cat.interface';
+import { CatsService } from './cats.service';
 
 @Controller('cats')
 export class CatsController {
-  catList: Cat[] = [
-    {
-      id: 1,
-      name: 'Cronos',
-    },
-    {
-      id: 2,
-      name: 'Rabo torto',
-    },
-  ];
-
+  constructor(private catsService: CatsService) {}
   @Post()
   async create(@Body() request: Cat): Promise<string> {
-    this.catList.push(request);
+    this.catsService.create(request);
     return 'ok';
   }
 
   @Get()
   async findAll(): Promise<Cat[]> {
-    return this.catList;
+    return this.catsService.findAll();
   }
 
   @Get(':id')
   async find(@Param('id') id: number): Promise<Cat> {
-    return this.catList.find((c) => c.id == id);
+    const cat = this.catsService.find(id);
+    if (cat == null) {
+      throw new NotFoundException('not found');
+    }
+    return cat;
   }
 }
